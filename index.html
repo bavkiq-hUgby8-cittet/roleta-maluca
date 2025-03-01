@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🎭 Roleta Maluca - Carnaval Edition 🎭</title>
     <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
     <!-- Font Awesome para ícones -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Biblioteca de QR Code -->
@@ -16,13 +16,9 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
 </head>
 <body>
-    <!-- Elementos decorativos de Carnaval -->
+    <!-- Elementos decorativos -->
     <div class="carnival-decorations">
         <div class="confetti-container"></div>
-        <div class="serpentine left"></div>
-        <div class="serpentine right"></div>
-        <div class="carnival-mask top-left"></div>
-        <div class="carnival-mask top-right"></div>
     </div>
 
     <!-- Preloader -->
@@ -50,10 +46,6 @@
                         <i class="fas fa-sign-in-alt"></i> Entrar na Festa
                     </button>
                 </div>
-            </div>
-            <div class="carnival-characters">
-                <div class="character character-1"></div>
-                <div class="character character-2"></div>
             </div>
         </div>
     </div>
@@ -83,12 +75,6 @@
                     <!-- Coluna esquerda - Roleta -->
                     <div class="dashboard-column left-column">
                         <div class="wheel-container">
-                            <!-- Efeitos de luz da roleta -->
-                            <div class="wheel-lights">
-                                <div class="light-ring ring-1"></div>
-                                <div class="light-ring ring-2"></div>
-                                <div class="light-ring ring-3"></div>
-                            </div>
                             <div class="wheel-spotlight"></div>
                             
                             <div id="wheel" class="wheel">
@@ -97,9 +83,7 @@
                             <div class="wheel-center">
                                 <div class="wheel-center-dot"></div>
                             </div>
-                            <div id="wheel-arrow" class="wheel-arrow">
-                                <div class="arrow-light"></div>
-                            </div>
+                            <div id="wheel-arrow" class="wheel-arrow"></div>
                             <button id="spin-btn" class="btn btn-spin">
                                 <span class="spin-text">GIRAR</span>
                                 <span class="spin-icon"><i class="fas fa-sync-alt"></i></span>
@@ -136,7 +120,6 @@
                             </div>
                             <div class="panel-body">
                                 <div id="players-queue" class="players-queue">
-                                    <!-- A fila será preenchida dinamicamente pelo JavaScript -->
                                     <div class="empty-queue-message">
                                         <i class="fas fa-user-plus"></i>
                                         <p>Aguardando jogadores...</p>
@@ -168,17 +151,6 @@
                                         <div class="slider-value-container">
                                             <span id="spin-duration-value" class="slider-value">5s</span>
                                         </div>
-                                    </div>
-                                </div>
-                                <div class="control-group">
-                                    <label><i class="fas fa-gamepad"></i> Modo de Jogo</label>
-                                    <div class="mode-toggles">
-                                        <button id="organizer-mode" class="btn btn-mode active">
-                                            <i class="fas fa-user-tie"></i> Organizador
-                                        </button>
-                                        <button id="player-mode" class="btn btn-mode">
-                                            <i class="fas fa-mobile-alt"></i> Jogador
-                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -245,7 +217,7 @@
                     <div class="player-loading-feedback">
                         <p class="loading-timeout-message hidden">Está demorando mais que o esperado...</p>
                         <button id="skip-webcam-btn" class="btn btn-secondary hidden">
-                            <i class="fas fa-forward"></i> Pular verificação da câmera
+                            <i class="fas fa-forward"></i> Continuar sem câmera
                         </button>
                     </div>
                 </div>
@@ -265,10 +237,7 @@
                             <div class="webcam-container">
                                 <div class="webcam-error hidden">
                                     <i class="fas fa-exclamation-triangle"></i>
-                                    <p>Erro ao acessar a câmera. Por favor, verifique suas permissões.</p>
-                                    <button id="retry-camera-btn" class="btn btn-secondary">
-                                        <i class="fas fa-redo"></i> Tentar Novamente
-                                    </button>
+                                    <p>Erro ao acessar a câmera. Você pode continuar sem tirar foto.</p>
                                 </div>
                                 <div class="video-container">
                                     <video id="webcam" autoplay playsinline width="320" height="240"></video>
@@ -361,9 +330,6 @@
                 </button>
             </div>
             <div class="modal-body">
-                <div class="challenge-decoration left"></div>
-                <div class="challenge-decoration right"></div>
-                
                 <div class="challenge-container">
                     <p id="challenge-text" class="challenge-text">Texto do desafio ou pergunta aqui.</p>
                     
@@ -403,9 +369,6 @@
                 <button id="refresh-gallery-btn" class="btn btn-secondary">
                     <i class="fas fa-sync"></i> Atualizar
                 </button>
-                <button id="download-gallery-btn" class="btn btn-tertiary">
-                    <i class="fas fa-download"></i> Salvar Galeria
-                </button>
             </div>
         </div>
     </div>
@@ -424,15 +387,6 @@
                 <div class="form-group">
                     <label for="room-code-input"><i class="fas fa-hashtag"></i> Código da Sala:</label>
                     <input type="text" id="room-code-input" placeholder="Digite o código da sala" class="form-input">
-                </div>
-                <div class="qr-scanner-container">
-                    <p class="scanner-label"><i class="fas fa-qrcode"></i> Ou escaneie o QR Code:</p>
-                    <div id="qr-scanner" class="qr-scanner">
-                        <div class="scanner-animation"></div>
-                    </div>
-                    <button id="start-scanner-btn" class="btn btn-secondary">
-                        <i class="fas fa-camera"></i> Abrir Scanner
-                    </button>
                 </div>
             </div>
             <div class="modal-footer">
