@@ -3,13 +3,13 @@
  * Script principal otimizado para garantir confiabilidade
  */
 
-// Configuração do Firebase - Não altere estas informações
+// Configuração do Firebase
 const firebaseConfig = {
     apiKey: "AIzaSyBQ5czr0wUqNxyqU9X_WHO3DrHOYEAPf7M",
     authDomain: "opoderdodedo.firebaseapp.com",
     databaseURL: "https://opoderdodedo-default-rtdb.firebaseio.com",
     projectId: "opoderdodedo",
-    storageBucket: "opoderdodedo.appspot.com",
+    storageBucket: "opoderdodedo.firebasestorage.app",
     messagingSenderId: "931089125837",
     appId: "1:931089125837:web:fa22ae36bd206f28cf7484",
     measurementId: "G-6YE1KQ0VQC"
@@ -23,33 +23,26 @@ const APP = {
         currentPlayer: null,
         playersQueue: [],
         spinDuration: 5, // segundos
-        playMode: "organizer", // "organizer" ou "player"
         isSpinning: false,
         selectedOption: null,
         selectedAnswer: null,
         photoTaken: false,
         webcamInitialized: false,
         firebaseInitialized: false,
-        cameraTimeout: null,
-        roomCreationAttempts: 0
+        cameraTimeout: null
     },
     
     // Dados dos desafios e perguntas
     gameData: {
         options: [
-            // Opções de Bebida (10 faces)
+            // Opções de Bebida (5 faces)
             { type: "bebida", text: "Beber uma dose.", color: "#f44336", icon: "glass-whiskey" },
             { type: "bebida", text: "Escolher alguém para beber uma dose.", color: "#e91e63", icon: "hand-point-right" },
             { type: "bebida", text: "Beber duas doses.", color: "#9c27b0", icon: "glass-cheers" },
             { type: "bebida", text: "Escolher duas pessoas para beberem uma dose.", color: "#673ab7", icon: "users" },
             { type: "bebida", text: "Brindar com alguém e ambos bebem uma dose.", color: "#3f51b5", icon: "wine-glass" },
-            { type: "bebida", text: "Beber uma dose de olhos fechados.", color: "#2196f3", icon: "eye-slash" },
-            { type: "bebida", text: "Beber uma dose sem fazer careta.", color: "#03a9f4", icon: "smile-beam" },
-            { type: "bebida", text: "Beber uma dose de um gole só.", color: "#00bcd4", icon: "tint" },
-            { type: "bebida", text: "Dê uma dose para alguém que ainda não bebeu.", color: "#009688", icon: "search" },
-            { type: "bebida", text: "Beber se errar a próxima pergunta.", color: "#4caf50", icon: "question-circle" },
-
-            // Perguntas de Conhecimento (10 faces)
+            
+            // Perguntas de Conhecimento (5 faces)
             { 
                 type: "pergunta", 
                 text: "Qual é a capital do Japão?", 
@@ -80,7 +73,7 @@ const APP = {
                 options: ["Marte", "Júpiter", "Saturno", "Netuno"], 
                 answer: 1, 
                 color: "#ffc107", 
-                icon: "planet-ringed" 
+                icon: "sun" 
             },
             { 
                 type: "pergunta", 
@@ -90,58 +83,13 @@ const APP = {
                 color: "#ff9800", 
                 icon: "palette" 
             },
-            { 
-                type: "pergunta", 
-                text: "Qual é o símbolo químico da água?", 
-                options: ["H2O", "CO2", "O2", "NH3"], 
-                answer: 0, 
-                color: "#ff5722", 
-                icon: "tint" 
-            },
-            { 
-                type: "pergunta", 
-                text: "Qual é o animal mais rápido do mundo?", 
-                options: ["Guepardo", "Falcão-peregrino", "Tubarão-mako", "Cavalo árabe"], 
-                answer: 0, 
-                color: "#795548", 
-                icon: "running" 
-            },
-            { 
-                type: "pergunta", 
-                text: "Qual é o menor país do mundo?", 
-                options: ["Mônaco", "Malta", "Vaticano", "Liechtenstein"], 
-                answer: 2, 
-                color: "#9e9e9e", 
-                icon: "flag" 
-            },
-            { 
-                type: "pergunta", 
-                text: "Quanto é 25 + 37 ÷ 2?", 
-                options: ["31", "44.5", "50", "35"], 
-                answer: 1, 
-                color: "#607d8b", 
-                icon: "calculator" 
-            },
-            { 
-                type: "pergunta", 
-                text: "Qual é a velocidade da luz?", 
-                options: ["300.000 km/s", "150.000 km/s", "500.000 km/s", "100.000 km/s"], 
-                answer: 0, 
-                color: "#795548", 
-                icon: "bolt" 
-            },
 
-            // Desafios e Prendas (10 faces)
+            // Desafios e Prendas (5 faces)
             { type: "desafio", text: "Fazer uma pose de yoga.", color: "#e91e63", icon: "spa" },
             { type: "desafio", text: "Fazer uma dança engraçada por 30 segundos.", color: "#9c27b0", icon: "music" },
             { type: "desafio", text: "Imitar um animal.", color: "#673ab7", icon: "paw" },
             { type: "desafio", text: "Fazer uma pose de modelo.", color: "#3f51b5", icon: "camera" },
             { type: "desafio", text: "Imitar um robô.", color: "#2196f3", icon: "robot" },
-            { type: "desafio", text: "Cantar um trecho de uma música.", color: "#03a9f4", icon: "microphone" },
-            { type: "desafio", text: "Fazer um elogio para alguém da festa usando o microfone.", color: "#00bcd4", icon: "heart" },
-            { type: "desafio", text: "Pular de um pé só por 15 segundos.", color: "#009688", icon: "shoe-prints" },
-            { type: "desafio", text: "Fazer uma saudação engraçada.", color: "#4caf50", icon: "hand-spock" },
-            { type: "desafio", text: "Fazer uma pose de super-herói.", color: "#8bc34a", icon: "mask" }
         ]
     },
     
@@ -162,13 +110,13 @@ document.addEventListener("DOMContentLoaded", () => {
     // Coletar todos os elementos do DOM
     collectDOMElements();
     
-    // Criar animação de confete
+    // Criar animação de confete (simplificada)
     createConfetti();
     
     // Inicializar Firebase
     initializeFirebase();
     
-    // Inicializar após pequena espera (para dar tempo de carregar os recursos)
+    // Inicializar após pequena espera (para carregar recursos)
     setTimeout(() => {
         // Esconder preloader
         hidePreloader();
@@ -181,8 +129,22 @@ document.addEventListener("DOMContentLoaded", () => {
         
         // Verificar parâmetros da URL
         checkUrlParams();
-    }, 1000);
+    }, 800);
 });
+
+// Verificar parâmetros da URL
+function checkUrlParams() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const roomParam = urlParams.get('sala');
+    
+    if (roomParam) {
+        // Se tiver o parâmetro sala na URL, entrar diretamente
+        if (APP.elements.roomCodeInput) {
+            APP.elements.roomCodeInput.value = roomParam;
+            joinRoom();
+        }
+    }
+}
 
 // Coletar todos os elementos do DOM
 function collectDOMElements() {
@@ -199,7 +161,6 @@ function collectDOMElements() {
     
     // Erro de webcam
     APP.elements.webcamError = document.querySelector(".webcam-error");
-    APP.elements.retryCamera = document.getElementById("retry-camera-btn");
     
     // Botões de boas-vindas
     APP.elements.createRoomBtn = document.getElementById("create-room-btn");
@@ -217,10 +178,6 @@ function collectDOMElements() {
     APP.elements.playerSpinBtn = document.getElementById("player-spin-btn");
     APP.elements.spinDurationInput = document.getElementById("spin-duration");
     APP.elements.spinDurationValue = document.getElementById("spin-duration-value");
-    
-    // Controles de modo
-    APP.elements.organizerModeBtn = document.getElementById("organizer-mode");
-    APP.elements.playerModeBtn = document.getElementById("player-mode");
     
     // Controles de jogadores
     APP.elements.nextPlayerBtn = document.getElementById("next-player-btn");
@@ -280,13 +237,10 @@ function collectDOMElements() {
     // Galeria de fotos
     APP.elements.photosGallery = document.getElementById("photos-gallery");
     APP.elements.refreshGalleryBtn = document.getElementById("refresh-gallery-btn");
-    APP.elements.downloadGalleryBtn = document.getElementById("download-gallery-btn");
     
     // Modal de entrada na sala
     APP.elements.roomCodeInput = document.getElementById("room-code-input");
     APP.elements.enterRoomBtn = document.getElementById("enter-room-btn");
-    APP.elements.startScannerBtn = document.getElementById("start-scanner-btn");
-    APP.elements.qrScanner = document.getElementById("qr-scanner");
     
     // Modal de reinício
     APP.elements.confirmResetBtn = document.getElementById("confirm-reset-btn");
@@ -300,9 +254,6 @@ function collectDOMElements() {
     
     // Container de notificações
     APP.elements.toastContainer = document.getElementById("toast-container");
-    
-    // Elementos decorativos
-    APP.elements.confettiContainer = document.querySelector(".confetti-container");
 }
 
 // Inicializar Firebase
@@ -322,42 +273,10 @@ function initializeFirebase() {
     } catch (error) {
         console.error("Erro ao inicializar Firebase:", error);
         
-        // Exibir mensagem de erro mais amigável
+        // Exibir mensagem de erro
         setTimeout(() => {
             showToast("Erro ao conectar com o servidor. Por favor, verifique sua conexão e recarregue a página.", "error", "Erro de Conexão");
         }, 1500);
-        
-        // Tentativa de inicialização alternativa
-        setTimeout(() => {
-            tryAlternativeInitialization();
-        }, 2000);
-    }
-}
-
-// Tentativa alternativa de inicialização do Firebase
-function tryAlternativeInitialization() {
-    if (APP.state.firebaseInitialized) return;
-    
-    console.log("Tentando inicialização alternativa do Firebase...");
-    
-    try {
-        // Verificar se já foi inicializado
-        if (firebase.apps.length === 0) {
-            firebase.initializeApp(firebaseConfig);
-        }
-        
-        // Guardar referências
-        APP.firebase.database = firebase.database();
-        APP.firebase.storage = firebase.storage();
-        
-        // Marcar como inicializado
-        APP.state.firebaseInitialized = true;
-        
-        console.log("Firebase inicializado com sucesso (alternativo)");
-        showToast("Conexão restabelecida!", "success");
-    } catch (error) {
-        console.error("Erro na inicialização alternativa do Firebase:", error);
-        showToast("Não foi possível conectar ao servidor. Recarregue a página ou tente mais tarde.", "error");
     }
 }
 
@@ -371,26 +290,13 @@ function hidePreloader() {
     }
 }
 
-// ===== Configuração de Animações =====
-
-// Criar a animação de confetti
+// Criar a animação de confete (simplificada)
 function createConfetti() {
-    const colors = [
-        "#9933ff", // Roxo
-        "#ff3399", // Rosa
-        "#ffcc00", // Amarelo
-        "#33ccff", // Azul
-        "#ff6600", // Laranja
-        "#00cc99"  // Verde
-    ];
+    const colors = ["#9933ff", "#ff3399", "#ffcc00", "#33ccff", "#ff6600"];
+    const confettiCount = 30;
+    const confettiContainer = document.querySelector(".confetti-container");
     
-    const confettiCount = 50;
-    const confettiContainer = APP.elements.confettiContainer;
-    
-    if (!confettiContainer) {
-        console.warn("Container de confete não encontrado");
-        return;
-    }
+    if (!confettiContainer) return;
     
     // Limpar container
     confettiContainer.innerHTML = "";
@@ -400,15 +306,12 @@ function createConfetti() {
         confetti.className = "confetti";
         
         // Propriedades aleatórias
-        const size = Math.random() * 10 + 5; // Entre 5 e 15 pixels
+        const size = Math.random() * 10 + 5;
         const color = colors[Math.floor(Math.random() * colors.length)];
-        const left = Math.random() * 100; // Posição horizontal aleatória (%)
+        const left = Math.random() * 100;
         
-        // Duração da animação entre 3 e 8 segundos
+        // Duração e delay da animação
         const fallDuration = Math.random() * 5 + 3;
-        const shakeDuration = Math.random() * 3 + 2;
-        
-        // Delay aleatório para iniciar a animação (para não começarem todas ao mesmo tempo)
         const delay = Math.random() * 5;
         
         // Aplicar estilos
@@ -416,12 +319,8 @@ function createConfetti() {
         confetti.style.height = `${size}px`;
         confetti.style.backgroundColor = color;
         confetti.style.left = `${left}%`;
-        confetti.style.animationDuration = `${fallDuration}s, ${shakeDuration}s`;
+        confetti.style.animationDuration = `${fallDuration}s`;
         confetti.style.animationDelay = `${delay}s`;
-        
-        // Formas diferentes
-        const shapes = ["50%", "0%", "50% 0 50% 50%"]; // Círculo, quadrado, triângulo
-        confetti.style.borderRadius = shapes[Math.floor(Math.random() * shapes.length)];
         
         confettiContainer.appendChild(confetti);
     }
@@ -429,11 +328,7 @@ function createConfetti() {
 
 // Criar seções da roleta
 function createWheelSections() {
-    // Verificar se o elemento wheel existe
-    if (!APP.elements.wheel) {
-        console.error("Elemento 'wheel' não encontrado");
-        return;
-    }
+    if (!APP.elements.wheel) return;
     
     // Limpar a roleta
     APP.elements.wheel.innerHTML = "";
@@ -473,7 +368,7 @@ function createWheelSections() {
     }
 }
 
-// ===== Configurar Eventos =====
+// Configurar Eventos
 function setupEventListeners() {
     console.log("Configurando eventos");
     
@@ -509,15 +404,6 @@ function setupEventListeners() {
         APP.elements.spinDurationInput.addEventListener("input", updateSpinDuration);
     }
     
-    // Modo de jogo
-    if (APP.elements.organizerModeBtn) {
-        APP.elements.organizerModeBtn.addEventListener("click", () => setPlayMode("organizer"));
-    }
-    
-    if (APP.elements.playerModeBtn) {
-        APP.elements.playerModeBtn.addEventListener("click", () => setPlayMode("player"));
-    }
-    
     // Controle de jogadores
     if (APP.elements.nextPlayerBtn) {
         APP.elements.nextPlayerBtn.addEventListener("click", nextPlayer);
@@ -536,10 +422,6 @@ function setupEventListeners() {
         APP.elements.refreshGalleryBtn.addEventListener("click", refreshPhotosGallery);
     }
     
-    if (APP.elements.downloadGalleryBtn) {
-        APP.elements.downloadGalleryBtn.addEventListener("click", downloadGallery);
-    }
-    
     // Resultado
     if (APP.elements.clearResultBtn) {
         APP.elements.clearResultBtn.addEventListener("click", hideResult);
@@ -550,11 +432,6 @@ function setupEventListeners() {
     // Pular verificação da webcam
     if (APP.elements.skipWebcamBtn) {
         APP.elements.skipWebcamBtn.addEventListener("click", skipWebcamAndShowForm);
-    }
-    
-    // Tentar webcam novamente
-    if (APP.elements.retryCamera) {
-        APP.elements.retryCamera.addEventListener("click", setupWebcam);
     }
     
     // Captura de foto
@@ -581,10 +458,6 @@ function setupEventListeners() {
     // Entrada na sala
     if (APP.elements.enterRoomBtn) {
         APP.elements.enterRoomBtn.addEventListener("click", joinRoom);
-    }
-    
-    if (APP.elements.startScannerBtn) {
-        APP.elements.startScannerBtn.addEventListener("click", startQRCodeScanner);
     }
     
     if (APP.elements.closeRoomEntryModal) {
@@ -737,16 +610,8 @@ function createRoom() {
     
     // Verificar conexão com Firebase
     if (!APP.firebase.database) {
-        showToast("Tentando reconectar ao servidor...", "warning");
-        
-        // Tentar reinicializar o Firebase
-        tryAlternativeInitialization();
-        
-        // Se após a reinicialização ainda não tiver o database, mostrar erro
-        if (!APP.firebase.database) {
-            showToast("Erro de conexão com o servidor. Tente novamente mais tarde.", "error");
-            return;
-        }
+        showToast("Erro de conexão com o servidor. Verifique sua conexão e recarregue a página.", "error");
+        return;
     }
     
     // Desabilitar botão para evitar múltiplos cliques
@@ -754,63 +619,75 @@ function createRoom() {
         APP.elements.createRoomBtn.disabled = true;
     }
     
-    // Gerar código aleatório para a sala
-    const roomCode = generateRoomCode();
-    APP.state.currentRoom = roomCode;
-    
-    // Atualizar interface
-    if (APP.elements.roomCode) {
-        APP.elements.roomCode.textContent = roomCode;
+    try {
+        // Gerar código aleatório para a sala
+        const roomCode = generateRoomCode();
+        APP.state.currentRoom = roomCode;
+        
+        // Atualizar interface
+        if (APP.elements.roomCode) {
+            APP.elements.roomCode.textContent = roomCode;
+        }
+        
+        // Gerar QR Code
+        generateQRCode(roomCode);
+        
+        // Criar a sala no Firebase
+        createRoomInDatabase(roomCode)
+            .then(() => {
+                // Habilitar botão novamente
+                if (APP.elements.createRoomBtn) {
+                    APP.elements.createRoomBtn.disabled = false;
+                }
+                
+                // Mostrar a tela do organizador
+                showScreen("organizer");
+                
+                // Notificar usuário
+                showToast("Sala criada com sucesso! Compartilhe o código com os participantes.", "success", "Pronto para a festa!");
+            })
+            .catch(error => {
+                console.error("Erro ao criar sala:", error);
+                showToast("Erro ao criar sala. Tente novamente.", "error");
+                
+                // Habilitar botão novamente
+                if (APP.elements.createRoomBtn) {
+                    APP.elements.createRoomBtn.disabled = false;
+                }
+            });
+    } catch (error) {
+        console.error("Erro ao criar sala:", error);
+        showToast("Erro ao criar sala. Tente novamente.", "error");
+        
+        // Habilitar botão novamente
+        if (APP.elements.createRoomBtn) {
+            APP.elements.createRoomBtn.disabled = false;
+        }
     }
-    
-    // Gerar QR Code
-    generateQRCode(roomCode);
-    
-    // Tentar criar a sala no Firebase
-    APP.state.roomCreationAttempts++;
-    
-    createRoomInDatabase(roomCode)
-        .then(() => {
-            // Habilitar botão novamente
-            if (APP.elements.createRoomBtn) {
-                APP.elements.createRoomBtn.disabled = false;
-            }
-            
-            // Mostrar a tela do organizador
-            showScreen("organizer");
-            
-            // Notificar usuário
-            showToast("Sala criada com sucesso! O código foi gerado.", "success", "Pronto para a festa!");
-            
-            // Resetar contador de tentativas
-            APP.state.roomCreationAttempts = 0;
-        })
-        .catch(error => {
-            console.error("Erro ao criar sala:", error);
-            
-            // Caso seja a primeira tentativa, tentar de novo
-            if (APP.state.roomCreationAttempts < 3) {
-                showToast("Tentando criar sala novamente...", "warning");
-                setTimeout(() => createRoom(), 1000);
-                return;
-            }
-            
-            // Erro após várias tentativas
-            showToast("Erro ao criar sala. Tente novamente.", "error");
-            
-            // Habilitar botão novamente
-            if (APP.elements.createRoomBtn) {
-                APP.elements.createRoomBtn.disabled = false;
-            }
-            
-            // Resetar contador de tentativas
-            APP.state.roomCreationAttempts = 0;
-        });
 }
 
 // Gerar código aleatório para a sala
 function generateRoomCode() {
     return Math.random().toString(36).substring(2, 8).toUpperCase();
+}
+
+// Criar sala no banco de dados
+function createRoomInDatabase(roomCode) {
+    if (!APP.firebase.database) {
+        return Promise.reject(new Error("Firebase não inicializado"));
+    }
+    
+    return APP.firebase.database.ref(`rooms/${roomCode}`).set({
+        created: firebase.database.ServerValue.TIMESTAMP,
+        active: true,
+        players: {},
+        history: {}
+    })
+    .then(() => {
+        // Escutar por mudanças na fila de jogadores
+        listenToPlayersQueue(roomCode);
+        return Promise.resolve();
+    });
 }
 
 // Copiar código da sala para a área de transferência
@@ -824,43 +701,31 @@ function copyRoomCode() {
             })
             .catch(err => {
                 console.error("Não foi possível copiar o código:", err);
-                
-                // Fallback
-                copyTextToClipboardFallback(roomCode);
+                showToast("Não foi possível copiar o código", "error");
             });
     } else {
         // Fallback para browsers que não suportam clipboard API
-        copyTextToClipboardFallback(roomCode);
-    }
-}
-
-// Fallback para copy to clipboard
-function copyTextToClipboardFallback(text) {
-    const textArea = document.createElement("textarea");
-    textArea.value = text;
-    
-    // Evitar scrolling
-    textArea.style.top = "0";
-    textArea.style.left = "0";
-    textArea.style.position = "fixed";
-    
-    document.body.appendChild(textArea);
-    textArea.focus();
-    textArea.select();
-    
-    try {
-        const successful = document.execCommand('copy');
-        if (successful) {
-            showToast("Código copiado para a área de transferência!", "success");
-        } else {
+        const textArea = document.createElement("textarea");
+        textArea.value = roomCode;
+        textArea.style.position = "fixed";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        
+        try {
+            const successful = document.execCommand('copy');
+            if (successful) {
+                showToast("Código copiado para a área de transferência!", "success");
+            } else {
+                showToast("Não foi possível copiar o código", "error");
+            }
+        } catch (err) {
+            console.error('Erro ao copiar texto', err);
             showToast("Não foi possível copiar o código", "error");
         }
-    } catch (err) {
-        console.error('Fallback: Erro ao copiar texto', err);
-        showToast("Não foi possível copiar o código", "error");
+        
+        document.body.removeChild(textArea);
     }
-    
-    document.body.removeChild(textArea);
 }
 
 // Gerar QR Code para a sala
@@ -896,26 +761,6 @@ function generateQRCode(roomCode) {
             </div>
         `;
     }
-}
-
-// Criar sala no banco de dados
-function createRoomInDatabase(roomCode) {
-    if (!APP.firebase.database) {
-        return Promise.reject(new Error("Firebase não inicializado"));
-    }
-    
-    return APP.firebase.database.ref(`rooms/${roomCode}`).set({
-        created: firebase.database.ServerValue.TIMESTAMP,
-        active: true,
-        playMode: APP.state.playMode,
-        players: {},
-        history: {}
-    })
-    .then(() => {
-        // Escutar por mudanças na fila de jogadores
-        listenToPlayersQueue(roomCode);
-        return Promise.resolve();
-    });
 }
 
 // Mostrar modal de entrada na sala
@@ -964,12 +809,11 @@ function joinRoom() {
                     setupWebcam();
                 }, 500);
                 
-                // Mostrar mensagem de timeout após 10 segundos
+                // Mostrar mensagem de timeout após 5 segundos
                 APP.state.cameraTimeout = setTimeout(() => {
                     showCameraTimeoutMessage();
-                }, 10000);
+                }, 5000);
                 
-                // Notificar usuário
                 showToast("Você entrou na sala com sucesso!", "success", "Bem-vindo!");
             } else {
                 showToast("Sala não encontrada ou inativa.", "error");
@@ -1030,11 +874,6 @@ function skipWebcamAndShowForm() {
     showToast("Você pode continuar sem usar a câmera, mas não poderá tirar foto.", "warning");
 }
 
-// Iniciar scanner de QR Code
-function startQRCodeScanner() {
-    showToast("Funcionalidade de escaneamento será implementada em breve!", "info");
-}
-
 // Configurar webcam
 function setupWebcam() {
     console.log("Configurando webcam...");
@@ -1086,15 +925,15 @@ function setupWebcam() {
     
     APP.state.photoTaken = false;
     
-    // Definir timeout para mostrar mensagem de erro após 10 segundos
+    // Definir timeout para mostrar mensagem de erro após 5 segundos
     APP.state.cameraTimeout = setTimeout(() => {
         showCameraTimeoutMessage();
-    }, 10000);
+    }, 5000);
     
     // Verificar se o navegador suporta getUserMedia
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         console.error("Navegador não suporta getUserMedia");
-        showWebcamError("Seu navegador não suporta acesso à câmera. Tente em outro navegador.");
+        skipWebcamAndShowForm();
         return;
     }
     
@@ -1155,41 +994,8 @@ function setupWebcam() {
         })
         .catch((error) => {
             console.error("Erro ao acessar webcam:", error);
-            showWebcamError("Não foi possível acessar a câmera. Verifique as permissões do navegador.");
+            skipWebcamAndShowForm();
         });
-}
-
-// Mostrar erro da webcam
-function showWebcamError(message) {
-    console.error("Erro na webcam:", message);
-    
-    // Cancelar qualquer timeout em andamento
-    if (APP.state.cameraTimeout) {
-        clearTimeout(APP.state.cameraTimeout);
-        APP.state.cameraTimeout = null;
-    }
-    
-    // Esconder painel de loading
-    if (APP.elements.playerLoading) {
-        APP.elements.playerLoading.classList.add("hidden");
-    }
-    
-    // Mostrar formulário
-    if (APP.elements.playerRegistrationForm) {
-        APP.elements.playerRegistrationForm.classList.remove("hidden");
-    }
-    
-    // Mostrar mensagem de erro
-    if (APP.elements.webcamError) {
-        const errorText = APP.elements.webcamError.querySelector("p");
-        if (errorText) {
-            errorText.textContent = message;
-        }
-        APP.elements.webcamError.classList.remove("hidden");
-    }
-    
-    // Mostrar aviso para o usuário
-    showToast("Erro ao acessar a câmera. Verifique suas permissões.", "error");
 }
 
 // Capturar foto
@@ -1274,21 +1080,14 @@ function joinQueue() {
     
     // Verificar se estamos conectados ao Firebase
     if (!APP.firebase.database || !APP.firebase.storage) {
-        showToast("Tentando reconectar ao servidor...", "warning");
-        
-        // Tentar reinicializar o Firebase
-        tryAlternativeInitialization();
-        
-        // Se após a reinicialização ainda não tiver conexão, mostrar erro
-        if (!APP.firebase.database || !APP.firebase.storage) {
-            showToast("Erro de conexão com o servidor. Tente novamente mais tarde.", "error");
-            return;
-        }
+        showToast("Erro de conexão com o servidor. Tente novamente mais tarde.", "error");
+        return;
     }
     
     // Desabilitar botão para evitar múltiplos cliques
     if (APP.elements.joinQueueBtn) {
         APP.elements.joinQueueBtn.disabled = true;
+        APP.elements.joinQueueBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Entrando...';
     }
     
     // Mostrar notificação de carregamento
@@ -1330,6 +1129,7 @@ function joinQueue() {
                 // Habilitar botão novamente
                 if (APP.elements.joinQueueBtn) {
                     APP.elements.joinQueueBtn.disabled = false;
+                    APP.elements.joinQueueBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Entrar na Fila';
                 }
                 
                 // Salvar ID do jogador atual
@@ -1357,6 +1157,7 @@ function joinQueue() {
                 // Habilitar botão novamente
                 if (APP.elements.joinQueueBtn) {
                     APP.elements.joinQueueBtn.disabled = false;
+                    APP.elements.joinQueueBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Entrar na Fila';
                 }
             });
     } catch (error) {
@@ -1366,6 +1167,7 @@ function joinQueue() {
         // Habilitar botão novamente
         if (APP.elements.joinQueueBtn) {
             APP.elements.joinQueueBtn.disabled = false;
+            APP.elements.joinQueueBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Entrar na Fila';
         }
     }
 }
@@ -1593,11 +1395,6 @@ function listenToQueuePosition(playerId) {
 
 // Selecionar jogador
 function selectPlayer(playerId) {
-    // Verificar modo de jogo
-    if (APP.state.playMode !== "organizer") {
-        return;
-    }
-    
     // Buscar dados do jogador
     const player = APP.state.playersQueue.find(p => p.id === playerId);
     
@@ -1691,29 +1488,6 @@ function updateSpinDuration() {
     const duration = APP.elements.spinDurationInput.value;
     APP.state.spinDuration = duration;
     APP.elements.spinDurationValue.textContent = `${duration}s`;
-}
-
-// Definir modo de jogo
-function setPlayMode(mode) {
-    APP.state.playMode = mode;
-    
-    // Atualizar botões
-    if (APP.elements.organizerModeBtn && APP.elements.playerModeBtn) {
-        APP.elements.organizerModeBtn.classList.toggle("active", mode === "organizer");
-        APP.elements.playerModeBtn.classList.toggle("active", mode === "player");
-    }
-    
-    // Atualizar no Firebase
-    if (APP.state.currentRoom) {
-        APP.firebase.database.ref(`rooms/${APP.state.currentRoom}/playMode`).set(mode)
-            .then(() => {
-                // Notificar
-                showToast(`Modo de jogo alterado para: ${mode === "organizer" ? "Organizador" : "Jogador"}`, "success");
-            })
-            .catch(error => {
-                console.error("Erro ao atualizar modo de jogo:", error);
-            });
-    }
 }
 
 // Girar a roleta
@@ -2008,9 +1782,6 @@ function completeChallenge() {
                 APP.firebase.database.ref(`rooms/${APP.state.currentRoom}/players/${APP.state.currentPlayer}/status`).set("completed");
             }
             
-            // Registrar resultado no histórico
-            saveResult(isCorrect);
-            
             // Resetar seleções
             APP.state.selectedOption = null;
             APP.state.selectedAnswer = null;
@@ -2020,12 +1791,10 @@ function completeChallenge() {
                 // Verificar se ainda há jogadores na fila
                 const waitingPlayers = APP.state.playersQueue.filter(player => player.status === "waiting");
                 if (waitingPlayers.length > 0) {
-                    // Pode-se implementar um alerta perguntando se quer chamar o próximo
-                    // Mas neste caso, será feito automaticamente
                     nextPlayer();
                 }
             }, 3000);
-        }, 2000);
+        }, 1500);
     } else {
         // Mostrar resultado positivo para desafios e bebidas
         showResult(true);
@@ -2038,255 +1807,8 @@ function completeChallenge() {
             APP.firebase.database.ref(`rooms/${APP.state.currentRoom}/players/${APP.state.currentPlayer}/status`).set("completed");
         }
         
-        // Registrar resultado no histórico
-        saveResult(true);
-        
         // Resetar seleções
         APP.state.selectedOption = null;
         APP.state.selectedAnswer = null;
         
         // Ir para o próximo jogador automaticamente após um tempo
-        setTimeout(() => {
-            // Verificar se ainda há jogadores na fila
-            const waitingPlayers = APP.state.playersQueue.filter(player => player.status === "waiting");
-            if (waitingPlayers.length > 0) {
-                // Pode-se implementar um alerta perguntando se quer chamar o próximo
-                // Mas neste caso, será feito automaticamente
-                nextPlayer();
-            }
-        }, 3000);
-    }
-}
-
-// Completar desafio/pergunta (versão do jogador)
-function completePlayerChallenge() {
-    // Verificar se a opção foi selecionada
-    if (!APP.state.selectedOption) {
-        showToast("Erro ao processar desafio. Tente novamente.", "error");
-        return;
-    }
-    
-    // Verificar tipo de desafio
-    if (APP.state.selectedOption.type === "pergunta") {
-        // Verificar se uma resposta foi selecionada
-        if (APP.state.selectedAnswer === null) {
-            showToast("Por favor, selecione uma resposta.", "warning");
-            return;
-        }
-        
-        // Verificar se a resposta está correta
-        const isCorrect = APP.state.selectedAnswer === APP.state.selectedOption.answer;
-        
-        // Destacar resposta correta/incorreta
-        document.querySelectorAll(".player-result .option-btn").forEach(btn => {
-            const index = parseInt(btn.dataset.index);
-            
-            if (index === APP.state.selectedOption.answer) {
-                btn.classList.add("correct");
-            } else if (index === APP.state.selectedAnswer && !isCorrect) {
-                btn.classList.add("incorrect");
-            }
-        });
-        
-        // Esperar um pouco para mostrar a resposta correta
-        setTimeout(() => {
-            // Atualizar status do jogador
-            APP.firebase.database.ref(`rooms/${APP.state.currentRoom}/players/${APP.state.currentPlayer}/status`).set("completed")
-                .then(() => {
-                    // Voltar para tela de espera
-                    if (APP.elements.playerResult && APP.elements.playerWaiting) {
-                        APP.elements.playerResult.classList.add("hidden");
-                        APP.elements.playerWaiting.classList.remove("hidden");
-                    }
-                    
-                    // Notificar usuário
-                    showToast(isCorrect ? "Resposta correta! Desafio completado." : "Resposta incorreta. Beba uma dose!", 
-                        isCorrect ? "success" : "warning");
-                    
-                    // Registrar resultado no histórico
-                    saveResult(isCorrect);
-                    
-                    // Resetar seleções
-                    APP.state.selectedOption = null;
-                    APP.state.selectedAnswer = null;
-                })
-                .catch(error => {
-                    console.error("Erro ao completar desafio:", error);
-                    showToast("Erro ao completar desafio. Tente novamente.", "error");
-                });
-        }, 2000);
-    } else {
-        // Atualizar status do jogador
-        APP.firebase.database.ref(`rooms/${APP.state.currentRoom}/players/${APP.state.currentPlayer}/status`).set("completed")
-            .then(() => {
-                // Voltar para tela de espera
-                if (APP.elements.playerResult && APP.elements.playerWaiting) {
-                    APP.elements.playerResult.classList.add("hidden");
-                    APP.elements.playerWaiting.classList.remove("hidden");
-                }
-                
-                // Notificar usuário
-                showToast("Desafio completado com sucesso!", "success");
-                
-                // Registrar resultado no histórico
-                saveResult(true);
-                
-                // Resetar seleções
-                APP.state.selectedOption = null;
-                APP.state.selectedAnswer = null;
-            })
-            .catch(error => {
-                console.error("Erro ao completar desafio:", error);
-                showToast("Erro ao completar desafio. Tente novamente.", "error");
-            });
-    }
-}
-
-// Mostrar resultado na tela do organizador
-function showResult(success) {
-    if (!APP.elements.resultTitle || !APP.elements.resultText || !APP.elements.resultDisplay) {
-        console.error("Elementos de resultado não encontrados");
-        return;
-    }
-    
-    // Buscar dados do jogador
-    const player = APP.state.playersQueue.find(p => p.id === APP.state.currentPlayer);
-    
-    if (!player) {
-        return;
-    }
-    
-    // Definir título e texto do resultado
-    let title = "";
-    let text = "";
-    
-    if (APP.state.selectedOption.type === "pergunta") {
-        title = success ? "✅ Resposta Correta!" : "❌ Resposta Incorreta!";
-        text = success ? 
-            `${player.name} acertou a pergunta! Escapou de beber desta vez.` : 
-            `${player.name} errou a pergunta! Hora de beber uma dose.`;
-    } else if (APP.state.selectedOption.type === "bebida") {
-        title = "🍹 Bebida!";
-        text = `${player.name} completou o desafio de bebida: ${APP.state.selectedOption.text}`;
-    } else {
-        title = "🎭 Desafio Completo!";
-        text = `${player.name} completou o desafio: ${APP.state.selectedOption.text}`;
-    }
-    
-    // Atualizar e mostrar o resultado
-    APP.elements.resultTitle.textContent = title;
-    APP.elements.resultText.textContent = text;
-    APP.elements.resultDisplay.classList.remove("hidden");
-}
-
-// Esconder resultado
-function hideResult() {
-    if (APP.elements.resultDisplay) {
-        APP.elements.resultDisplay.classList.add("hidden");
-    }
-}
-
-// Salvar resultado no histórico
-function saveResult(success) {
-    if (!APP.state.currentPlayer || !APP.firebase.database) return;
-    
-    // Encontrar jogador atual
-    const player = APP.state.playersQueue.find(p => p.id === APP.state.currentPlayer);
-    
-    if (!player || !APP.state.selectedOption) {
-        return;
-    }
-    
-    // Criar entrada no histórico
-    const historyRef = APP.firebase.database.ref(`rooms/${APP.state.currentRoom}/history/${APP.state.currentPlayer}`);
-    historyRef.set({
-        name: player.name,
-        photoURL: player.photoURL,
-        challengeType: APP.state.selectedOption.type,
-        challengeText: APP.state.selectedOption.text,
-        success: success,
-        timestamp: firebase.database.ServerValue.TIMESTAMP
-    })
-    .catch(error => {
-        console.error("Erro ao salvar resultado no histórico:", error);
-    });
-}
-
-// Mostrar galeria de fotos
-function showPhotosGallery() {
-    // Carregar galeria
-    refreshPhotosGallery();
-    
-    // Mostrar modal
-    showModal("photos");
-}
-
-// Atualizar galeria de fotos
-function refreshPhotosGallery() {
-    if (!APP.elements.photosGallery) {
-        console.error("Elemento 'photosGallery' não encontrado");
-        return;
-    }
-    
-    // Limpar galeria
-    APP.elements.photosGallery.innerHTML = "";
-    
-    if (APP.state.playersQueue.length === 0) {
-        // Mostrar mensagem de galeria vazia
-        APP.elements.photosGallery.innerHTML = `
-            <div class="empty-gallery-message">
-                <i class="fas fa-camera"></i>
-                <p>Nenhuma foto ainda. Os jogadores aparecerão aqui!</p>
-            </div>
-        `;
-        return;
-    }
-    
-    // Adicionar foto de cada jogador
-    APP.state.playersQueue.forEach((player) => {
-        try {
-            const photoItem = document.createElement("div");
-            photoItem.className = "photo-item";
-            
-            photoItem.innerHTML = `
-                <img src="${player.photoURL}" alt="${player.name}" class="photo-img">
-                <div class="photo-info">
-                    <div class="photo-name">${player.name}</div>
-                </div>
-            `;
-            
-            APP.elements.photosGallery.appendChild(photoItem);
-        } catch (error) {
-            console.error("Erro ao adicionar foto do jogador:", error);
-        }
-    });
-}
-
-// Função para baixar a galeria (simulada)
-function downloadGallery() {
-    showToast("Função de download será implementada em breve!", "info");
-}
-
-// Reiniciar o jogo
-function resetGame() {
-    // Confirmar reinício
-    if (APP.state.currentRoom && APP.firebase.database) {
-        // Desativar a sala atual
-        APP.firebase.database.ref(`rooms/${APP.state.currentRoom}/active`).set(false)
-            .then(() => {
-                // Criar uma nova sala
-                createRoom();
-                
-                // Notificar usuário
-                showToast("Jogo reiniciado com sucesso!", "success", "Nova Sala Criada");
-            })
-            .catch(error => {
-                console.error("Erro ao reiniciar jogo:", error);
-                showToast("Erro ao reiniciar jogo. Tente novamente.", "error");
-            });
-    } else {
-        showToast("Nenhuma sala ativa para reiniciar.", "warning");
-    }
-}
-
-// Verificar parâmetros da URL ao carr
