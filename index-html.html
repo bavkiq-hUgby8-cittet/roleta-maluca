@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎭 Roleta Maluca - Carnaval Edition 🎭</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome para ícones -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Biblioteca de QR Code -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+</head>
+<body>
+    <!-- Elementos decorativos de Carnaval -->
+    <div class="carnival-decorations">
+        <div class="confetti-container"></div>
+        <div class="serpentine left"></div>
+        <div class="serpentine right"></div>
+        <div class="carnival-mask top-left"></div>
+        <div class="carnival-mask top-right"></div>
+    </div>
+
+    <!-- Preloader -->
+    <div id="preloader">
+        <div class="spinner"></div>
+        <p>Carregando a folia...</p>
+    </div>
+
+    <!-- Tela de Boas-vindas -->
+    <div id="welcome-screen" class="screen">
+        <div class="container welcome-container">
+            <div class="logo-container">
+                <div class="logo-glow"></div>
+                <h1 class="logo-text">🎭 Roleta Maluca 🎭</h1>
+                <div class="logo-subtitle">Edição Carnaval</div>
+            </div>
+            <div class="welcome-content">
+                <h2 class="welcome-tagline">A festa mais animada do ano!</h2>
+                <p class="welcome-desc">Gire a roleta, complete desafios e divirta-se com seus amigos!</p>
+                <div class="buttons">
+                    <button id="create-room-btn" class="btn btn-primary">
+                        <i class="fas fa-plus-circle"></i> Criar Sala
+                    </button>
+                    <button id="join-room-btn" class="btn btn-secondary">
+                        <i class="fas fa-sign-in-alt"></i> Entrar na Festa
+                    </button>
+                </div>
+            </div>
+            <div class="carnival-characters">
+                <div class="character character-1"></div>
+                <div class="character character-2"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tela do Organizador -->
+    <div id="organizer-screen" class="screen hidden">
+        <div class="container">
+            <header class="game-header">
+                <div class="header-left">
+                    <h1 class="game-title">🎭 Roleta Maluca 🎭</h1>
+                    <div class="game-subtitle">Edição Carnaval</div>
+                </div>
+                <div class="header-right">
+                    <div class="room-info">
+                        <h3>Sala: <span id="room-code" class="room-code-display">Carregando...</span>
+                            <button id="copy-room-code" class="btn btn-icon" title="Copiar código">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </h3>
+                    </div>
+                </div>
+            </header>
+
+            <main class="game-content organizer-dashboard">
+                <!-- Painel Unificado -->
+                <div class="main-dashboard">
+                    <!-- Roleta -->
+                    <div class="wheel-container">
+                        <!-- Efeitos de luz da roleta -->
+                        <div class="wheel-lights">
+                            <div class="light-ring ring-1"></div>
+                            <div class="light-ring ring-2"></div>
+                            <div class="light-ring ring-3"></div>
+                        </div>
+                        <div class="wheel-spotlight"></div>
+                        
+                        <div id="wheel" class="wheel">
+                            <!-- As 30 divisões da roleta serão geradas pelo JavaScript -->
+                        </div>
+                        <div class="wheel-center">
+                            <div class="wheel-center-dot"></div>
+                        </div>
+                        <div id="wheel-arrow" class="wheel-arrow">
+                            <div class="arrow-light"></div>
+                        </div>
+                        <button id="spin-btn" class="btn btn-spin">
+                            <span class="spin-text">GIRAR</span>
+                            <span class="spin-icon"><i class="fas fa-sync-alt"></i></span>
+                        </button>
+                    </div>
+
+                    <!-- Informações e Controles Laterais -->
+                    <div class="dashboard-sidepanel">
+                        <!-- Área de Animação do Jogador -->
+                        <div id="player-animation" class="player-animation panel">
+                            <div class="panel-header">
+                                <h2><i class="fas fa-user-alt"></i> Jogador Atual</h2>
+                            </div>
+                            <div class="panel-body">
+                                <div class="player-spotlight"></div>
+                                <div id="current-player-photo" class="current-player-photo">
+                                    <div class="photo-frame"></div>
+                                </div>
+                                <div class="player-info-display">
+                                    <h3 id="current-player-name" class="player-name-display">Aguardando jogador...</h3>
+                                    <div id="player-status" class="player-status-display">Selecione alguém da fila</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Área da Fila de Jogadores -->
+                        <div class="players-queue-container panel">
+                            <div class="panel-header">
+                                <h2>
+                                    <i class="fas fa-users"></i> Fila de Jogadores
+                                    <span id="players-count" class="players-count">0</span>
+                                </h2>
+                            </div>
+                            <div class="panel-body">
+                                <div id="players-queue" class="players-queue">
+                                    <!-- A fila será preenchida dinamicamente pelo JavaScript -->
+                                    <div class="empty-queue-message">
+                                        <i class="fas fa-user-plus"></i>
+                                        <p>Aguardando jogadores...</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="panel-footer">
+                                <button id="next-player-btn" class="btn btn-primary">
+                                    <i class="fas fa-user-check"></i> Próximo
+                                </button>
+                                <button id="skip-player-btn" class="btn btn-secondary">
+                                    <i class="fas fa-user-times"></i> Pular
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Painel de Controle -->
+                        <div class="control-panel panel">
+                            <div class="panel-header">
+                                <h2><i class="fas fa-sliders-h"></i> Controles</h2>
+                            </div>
+                            <div class="panel-body">
+                                <div class="control-group">
+                                    <label for="spin-duration">
+                                        <i class="fas fa-stopwatch"></i> Tempo de Giro
+                                    </label>
+                                    <div class="slider-container">
+                                        <input type="range" id="spin-duration" min="2" max="10" value="5" step="0.5" class="range-slider">
+                                        <div class="slider-value-container">
+                                            <span id="spin-duration-value" class="slider-value">5s</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="control-group">
+                                    <label><i class="fas fa-gamepad"></i> Modo de Jogo</label>
+                                    <div class="mode-toggles">
+                                        <button id="organizer-mode" class="btn btn-mode active">
+                                            <i class="fas fa-user-tie"></i> Organizador
+                                        </button>
+                                        <button id="player-mode" class="btn btn-mode">
+                                            <i class="fas fa-mobile-alt"></i> Jogador
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="panel-footer">
+                                <button id="see-photos-btn" class="btn btn-tertiary">
+                                    <i class="fas fa-images"></i> Galeria de Fotos
+                                </button>
+                                <button id="reset-game-btn" class="btn btn-danger">
+                                    <i class="fas fa-redo-alt"></i> Reiniciar
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- QR Code (movido para a parte inferior) -->
+                        <div class="qrcode-panel panel">
+                            <div class="panel-header">
+                                <h2><i class="fas fa-qrcode"></i> Entrar na Festa</h2>
+                            </div>
+                            <div class="panel-body qrcode-panel-body">
+                                <p class="qrcode-instruction">Escaneie o código para participar:</p>
+                                <div id="qrcode-container" class="qrcode-box">
+                                    <div class="qrcode-loading">Gerando QR Code...</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Área de Resultado -->
+                <div id="result-display" class="result-display hidden">
+                    <div class="result-content">
+                        <h3 id="result-title" class="result-title">Resultado</h3>
+                        <p id="result-text" class="result-text"></p>
+                    </div>
+                    <button id="clear-result-btn" class="btn btn-tertiary">
+                        <i class="fas fa-times"></i> Fechar
+                    </button>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Tela do Jogador (Simplificada) -->
+    <div id="player-screen" class="screen hidden">
+        <div class="container">
+            <header class="game-header player-header">
+                <div class="header-left">
+                    <h1 class="game-title">🎭 Roleta Maluca 🎭</h1>
+                    <div class="game-subtitle">Edição Carnaval</div>
+                </div>
+                <div class="header-right">
+                    <div class="room-badge">
+                        <span>Sala: </span>
+                        <span id="player-room-code" class="room-code-badge">---</span>
+                    </div>
+                </div>
+            </header>
+
+            <main class="player-content">
+                <!-- Estado de Carregamento -->
+                <div id="player-loading" class="player-loading">
+                    <div class="loading-spinner"></div>
+                    <p>Carregando câmera...</p>
+                </div>
+                
+                <!-- Formulário de Registro do Jogador -->
+                <div id="player-registration-form" class="player-form panel hidden">
+                    <div class="panel-header">
+                        <h2><i class="fas fa-user-plus"></i> Entre na Festa!</h2>
+                    </div>
+                    <div class="panel-body">
+                        <div class="form-group">
+                            <label for="player-name"><i class="fas fa-user"></i> Seu Nome:</label>
+                            <input type="text" id="player-name" placeholder="Digite seu nome" required class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-camera"></i> Sua Foto:</label>
+                            <div class="webcam-container">
+                                <div class="webcam-error hidden">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    <p>Erro ao acessar a câmera. Por favor, verifique suas permissões.</p>
+                                    <button id="retry-camera-btn" class="btn btn-secondary">
+                                        <i class="fas fa-redo"></i> Tentar Novamente
+                                    </button>
+                                </div>
+                                <div class="video-container">
+                                    <video id="webcam" autoplay playsinline width="320" height="240"></video>
+                                    <canvas id="canvas" width="320" height="240" class="hidden"></canvas>
+                                    <div class="camera-frame"></div>
+                                    <div class="camera-flash"></div>
+                                </div>
+                                <div class="webcam-controls">
+                                    <button id="capture-btn" class="btn btn-secondary">
+                                        <i class="fas fa-camera"></i> Capturar Foto
+                                    </button>
+                                    <button id="recapture-btn" class="btn btn-tertiary hidden">
+                                        <i class="fas fa-redo"></i> Nova Foto
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel-footer">
+                        <button id="join-queue-btn" class="btn btn-primary btn-lg">
+                            <i class="fas fa-sign-in-alt"></i> Entrar na Fila
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tela de Espera do Jogador -->
+                <div id="player-waiting" class="player-waiting panel hidden">
+                    <div class="panel-header">
+                        <h2><i class="fas fa-hourglass-half"></i> Aguardando sua vez</h2>
+                    </div>
+                    <div class="panel-body">
+                        <div class="waiting-animation">
+                            <div class="queue-animation"></div>
+                        </div>
+                        <div id="player-position" class="player-position">
+                            <span class="position-label">Sua posição: </span>
+                            <span id="queue-position" class="position-number">...</span>
+                        </div>
+                        <div class="waiting-message">
+                            <p>Fique ligado! Quando for sua vez, o organizador irá te chamar.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tela de Vez do Jogador -->
+                <div id="player-turn" class="player-turn panel hidden">
+                    <div class="panel-header">
+                        <h2><i class="fas fa-star"></i> É a sua vez!</h2>
+                    </div>
+                    <div class="panel-body">
+                        <div class="turn-animation">
+                            <div class="player-highlight"></div>
+                        </div>
+                        <div class="turn-message">
+                            <p>Sua vez de girar a roleta e encarar o desafio!</p>
+                        </div>
+                        <button id="player-spin-btn" class="btn btn-spin btn-lg">
+                            <span class="spin-text">GIRAR AGORA</span>
+                            <span class="spin-icon"><i class="fas fa-sync-alt"></i></span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tela de Resultado do Jogador -->
+                <div id="player-result" class="player-result panel hidden">
+                    <div class="panel-header">
+                        <h2 id="player-result-title">Resultado</h2>
+                    </div>
+                    <div class="panel-body">
+                        <div id="player-result-content" class="result-content"></div>
+                    </div>
+                    <div class="panel-footer">
+                        <button id="player-complete-btn" class="btn btn-primary">
+                            <i class="fas fa-check"></i> Completar
+                        </button>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Modal de Desafio/Pergunta -->
+    <div id="challenge-modal" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-content challenge-modal-content">
+            <div class="modal-header challenge-header">
+                <h2 id="challenge-type" class="challenge-type">Desafio</h2>
+                <button id="close-modal" class="close-btn" aria-label="Fechar">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="challenge-decoration left"></div>
+                <div class="challenge-decoration right"></div>
+                
+                <div class="challenge-container">
+                    <p id="challenge-text" class="challenge-text">Texto do desafio ou pergunta aqui.</p>
+                    
+                    <div id="question-options" class="question-options hidden">
+                        <!-- Opções da pergunta serão geradas dinamicamente -->
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="complete-challenge-btn" class="btn btn-primary btn-lg">
+                    <i class="fas fa-check-circle"></i> Completar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Fotos -->
+    <div id="photos-modal" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2><i class="fas fa-images"></i> Galeria de Fotos</h2>
+                <button id="close-photos-modal" class="close-btn" aria-label="Fechar">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="photos-gallery" class="photos-gallery">
+                    <!-- Fotos dos jogadores serão exibidas aqui -->
+                    <div class="empty-gallery-message">
+                        <i class="fas fa-camera"></i>
+                        <p>Nenhuma foto ainda. Os jogadores aparecerão aqui!</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="refresh-gallery-btn" class="btn btn-secondary">
+                    <i class="fas fa-sync"></i> Atualizar
+                </button>
+                <button id="download-gallery-btn" class="btn btn-tertiary">
+                    <i class="fas fa-download"></i> Salvar Galeria
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Entrada na Sala -->
+    <div id="room-entry-modal" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-sign-in-alt"></i> Entrar na Festa</h2>
+                <button id="close-room-entry-modal" class="close-btn" aria-label="Fechar">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="room-code-input"><i class="fas fa-hashtag"></i> Código da Sala:</label>
+                    <input type="text" id="room-code-input" placeholder="Digite o código da sala" class="form-input">
+                </div>
+                <div class="qr-scanner-container">
+                    <p class="scanner-label"><i class="fas fa-qrcode"></i> Ou escaneie o QR Code:</p>
+                    <div id="qr-scanner" class="qr-scanner">
+                        <div class="scanner-animation"></div>
+                    </div>
+                    <button id="start-scanner-btn" class="btn btn-secondary">
+                        <i class="fas fa-camera"></i> Abrir Scanner
+                    </button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="enter-room-btn" class="btn btn-primary btn-lg">
+                    <i class="fas fa-door-open"></i> Entrar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmação de Reinício -->
+    <div id="reset-confirmation-modal" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-exclamation-triangle"></i> Confirmação</h2>
+                <button id="close-reset-modal" class="close-btn" aria-label="Fechar">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p class="confirmation-message">Tem certeza que deseja reiniciar o jogo? Todos os jogadores e histórico serão perdidos.</p>
+            </div>
+            <div class="modal-footer">
+                <button id="cancel-reset-btn" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Cancelar
+                </button>
+                <button id="confirm-reset-btn" class="btn btn-danger">
+                    <i class="fas fa-trash"></i> Reiniciar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notificações Toast -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Scripts -->
+    <script src="script.js"></script>
+</body>
+</html>
