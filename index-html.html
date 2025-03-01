@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roleta Maluca - Jogo de Desafios para Festa</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.22.0/firebase-app-compat.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.22.0/firebase-database-compat.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.22.0/firebase-storage-compat.min.js"></script>
+</head>
+<body>
+    <!-- Tela de Boas-vindas -->
+    <div id="welcome-screen" class="screen">
+        <div class="container">
+            <h1>🎉 Roleta Maluca 🎉</h1>
+            <h2>Jogo de Desafios para Festa</h2>
+            <div class="buttons">
+                <button id="create-room-btn" class="btn btn-primary">Criar Sala (Organizador)</button>
+                <button id="join-room-btn" class="btn btn-secondary">Entrar na Sala (Jogador)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tela do Organizador -->
+    <div id="organizer-screen" class="screen hidden">
+        <div class="container">
+            <header class="game-header">
+                <h1>🎉 Roleta Maluca 🎉</h1>
+                <div class="room-info">
+                    <h3>Sala: <span id="room-code">Carregando...</span></h3>
+                    <div id="qrcode-container"></div>
+                </div>
+            </header>
+
+            <main class="game-content">
+                <div class="main-area">
+                    <!-- Roleta -->
+                    <div class="wheel-container">
+                        <div class="wheel-light-effect"></div>
+                        <div id="wheel" class="wheel">
+                            <!-- As 30 divisões da roleta serão geradas pelo JavaScript -->
+                        </div>
+                        <div id="wheel-arrow" class="wheel-arrow"></div>
+                        <button id="spin-btn" class="btn btn-spin">GIRAR</button>
+                    </div>
+
+                    <!-- Área de Animação do Jogador -->
+                    <div id="player-animation" class="player-animation">
+                        <div id="current-player-photo" class="current-player-photo"></div>
+                        <h3 id="current-player-name">Aguardando jogador...</h3>
+                    </div>
+                </div>
+
+                <!-- Área da Fila de Jogadores -->
+                <div class="players-queue-container">
+                    <h2>Fila de Jogadores</h2>
+                    <div id="players-queue" class="players-queue">
+                        <!-- A fila será preenchida dinamicamente pelo JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Painel de Controle -->
+                <div class="control-panel">
+                    <h2>Painel de Controle</h2>
+                    <div class="control-group">
+                        <label for="spin-duration">Tempo de Giro (segundos):</label>
+                        <input type="range" id="spin-duration" min="2" max="10" value="5" step="0.5">
+                        <span id="spin-duration-value">5s</span>
+                    </div>
+                    <div class="control-group">
+                        <label>Modo de Jogo:</label>
+                        <div class="mode-toggles">
+                            <button id="organizer-mode" class="btn btn-mode active">Organizador</button>
+                            <button id="player-mode" class="btn btn-mode">Jogador</button>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <button id="next-player-btn" class="btn btn-primary">Próximo Jogador</button>
+                        <button id="skip-player-btn" class="btn btn-secondary">Pular Jogador</button>
+                        <button id="see-photos-btn" class="btn btn-tertiary">Ver Fotos</button>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Tela do Jogador -->
+    <div id="player-screen" class="screen hidden">
+        <div class="container">
+            <header class="game-header">
+                <h1>🎉 Roleta Maluca 🎉</h1>
+                <h3>Junte-se à diversão!</h3>
+            </header>
+
+            <main class="player-content">
+                <div id="player-registration-form" class="player-form">
+                    <h2>Cadastro</h2>
+                    <div class="form-group">
+                        <label for="player-name">Seu Nome:</label>
+                        <input type="text" id="player-name" placeholder="Digite seu nome" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Sua Foto:</label>
+                        <div class="webcam-container">
+                            <video id="webcam" autoplay playsinline width="320" height="240"></video>
+                            <canvas id="canvas" width="320" height="240" class="hidden"></canvas>
+                            <div class="webcam-controls">
+                                <button id="capture-btn" class="btn btn-secondary">Capturar Foto</button>
+                                <button id="recapture-btn" class="btn btn-tertiary hidden">Nova Foto</button>
+                            </div>
+                        </div>
+                    </div>
+                    <button id="join-queue-btn" class="btn btn-primary">Entrar na Fila</button>
+                </div>
+
+                <div id="player-waiting" class="player-waiting hidden">
+                    <h2>Você está na fila!</h2>
+                    <p>Aguarde sua vez de jogar.</p>
+                    <div id="player-position" class="player-position">
+                        <span>Sua posição: </span>
+                        <span id="queue-position">...</span>
+                    </div>
+                </div>
+
+                <div id="player-turn" class="player-turn hidden">
+                    <h2>É a sua vez!</h2>
+                    <button id="player-spin-btn" class="btn btn-spin">GIRAR A ROLETA</button>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Modal de Desafio/Pergunta -->
+    <div id="challenge-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="challenge-type">Desafio</h2>
+                <button id="close-modal" class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="challenge-text">Texto do desafio ou pergunta aqui.</p>
+                <div id="question-options" class="question-options hidden">
+                    <!-- Opções da pergunta serão geradas dinamicamente -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="complete-challenge-btn" class="btn btn-primary">Completar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Fotos -->
+    <div id="photos-modal" class="modal hidden">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2>Galeria de Fotos</h2>
+                <button id="close-photos-modal" class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="photos-gallery" class="photos-gallery">
+                    <!-- Fotos dos jogadores serão exibidas aqui -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Entrada na Sala -->
+    <div id="room-entry-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Entrar na Sala</h2>
+                <button id="close-room-entry-modal" class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="room-code-input">Código da Sala:</label>
+                    <input type="text" id="room-code-input" placeholder="Digite o código da sala">
+                </div>
+                <p>Ou escaneie o QR Code fornecido pelo organizador.</p>
+            </div>
+            <div class="modal-footer">
+                <button id="enter-room-btn" class="btn btn-primary">Entrar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
